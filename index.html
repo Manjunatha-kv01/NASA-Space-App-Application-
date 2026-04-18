@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FireWatch — NASA Space Apps Challenge 2023</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #060810;
+  --bg1: #0c0f18;
+  --bg2: #111520;
+  --bg3: #171c2a;
+  --border: #1e2535;
+  --border2: #263040;
+  --orange: #f97316;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --purple: #a855f7;
+  --txt: #dde4f0;
+  --txt2: #8a9bb8;
+  --txt3: #4a5670;
+  --font-head: 'Orbitron', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg0);
+  color: var(--txt);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg1); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(6,8,16,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-logo {
+  width: 32px; height: 32px;
+  background: radial-gradient(circle at 40% 40%, #f97316, #991b1b);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: 0 0 16px rgba(249,115,22,0.4);
+}
+.nav-logo::after {
+  content: '';
+  position: absolute; width: 12px; height: 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  top: 4px; left: 6px;
+}
+.nav-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nav-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt3);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+}
+.nav-links {
+  display: flex; gap: 4px;
+}
+.nav-links button {
+  background: none; border: none;
+  color: var(--txt2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.2s;
+}
+.nav-links button:hover, .nav-links button.active {
+  color: var(--orange);
+  background: rgba(249,115,22,0.08);
+}
+.nav-links button.active {
+  border: 1px solid rgba(249,115,22,0.25);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── TABS / SECTIONS ── */
+.page { display: none; padding-top: 56px; }
+.page.active { display: block; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+#fire-canvas {
+  position: absolute; inset: 0; z-index: 0;
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(6,8,16,0.3) 0%, rgba(6,8,16,0.7) 60%, var(--bg0) 100%);
+  z-index: 1;
+}
+.hero-content {
+  position: relative; z-index: 2;
+  padding: 80px 60px 60px;
+  max-width: 900px;
+}
+.hero-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--orange);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-tag::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--orange);
+}
+.hero-h1 {
+  font-family: var(--font-head);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+.hero-h1 span {
+  background: linear-gradient(135deg, #f97316 0%, #fbbf24 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 18px;
+  color: var(--txt2);
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-bottom: 40px;
+}
+.hero-stats {
+  display: flex; gap: 40px;
+  margin-bottom: 40px;
+}
+.hero-stat-val {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--orange);
+}
+.hero-stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.cta-row {
+  display: flex; gap: 14px; align-items: center;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 12px 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(249,115,22,0.5);
+}
+.btn-outline {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--txt2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  padding: 12px 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+.hero-tech {
+  position: relative; z-index: 2;
+  padding: 0 60px 60px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.tech-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.06em;
+}
+
+.scroll-indicator {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  z-index: 2; text-align: center;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--txt3); letter-spacing: 0.12em;
+  animation: bounce 2s infinite;
+}
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+.scroll-arrow {
+  width: 1px; height: 28px;
+  background: linear-gradient(to bottom, transparent, var(--border2));
+  margin: 6px auto 0;
+}
+
+/* ── DASHBOARD ── */
+#dashboard {
+  min-height: calc(100vh - 56px);
+  padding: 32px 32px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+}
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.panel-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--txt2);
+  text-transform: uppercase;
+}
+.panel-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.badge-green { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.badge-orange { background: rgba(249,115,22,0.12); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+.badge-red { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+.badge-blue { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+.badge-amber { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+
+/* DRONE STATE MACHINE */
+.drone-panel { grid-column: 1; grid-row: 1 / 3; }
+.state-machine {
+  padding: 20px 16px;
+}
+.state-track {
+  position: relative;
+}
+.state-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  position: relative;
+}
+.state-line {
+  position: absolute;
+  left: 15px; top: 44px; bottom: -12px;
+  width: 2px;
+  background: var(--border);
+}
+.state-line.active { background: linear-gradient(to bottom, var(--orange), transparent); }
+.state-circle {
+  width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt3);
+  transition: all 0.4s;
+  position: relative; z-index: 1;
+  background: var(--bg2);
+}
+.state-circle.done {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.1);
+  color: var(--green);
+}
+.state-circle.current {
+  border-color: var(--orange);
+  background: rgba(249,115,22,0.15);
+  color: var(--orange);
+  box-shadow: 0 0 12px rgba(249,115,22,0.3);
+  animation: state-pulse 1.5s infinite;
+}
+@keyframes state-pulse {
+  0%,100% { box-shadow: 0 0 8px rgba(249,115,22,0.3); }
+  50% { box-shadow: 0 0 20px rgba(249,115,22,0.6); }
+}
+.state-info { flex: 1; padding-top: 4px; }
+.state-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt);
+  letter-spacing: 0.06em;
+}
+.state-desc {
+  font-size: 12px;
+  color: var(--txt3);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.state-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+  margin-top: 4px;
+}
+
+.telemetry-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 16px;
+}
+.telem-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+.telem-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt3);
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.telem-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--txt);
+}
+.telem-value.orange { color: var(--orange); }
+.telem-value.green { color: var(--green); }
+.telem-value.blue { color: var(--blue); }
+.telem-unit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+  margin-left: 3px;
+}
+
+.drone-ctrl {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.ctrl-row {
+  display: flex; gap: 8px; margin-bottom: 8px;
+}
+.ctrl-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--txt2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ctrl-btn:hover { border-color: var(--orange); color: var(--orange); }
+.ctrl-btn.active { background: rgba(249,115,22,0.12); border-color: var(--orange); color: var(--orange); }
+.ctrl-btn.danger:hover { border-color: var(--red); color: var(--red); }
+.ctrl-btn.danger.active { background: rgba(239,68,68,0.12); border-color: var(--red); color: var(--red); }
+
+/* CAMERA FEED */
+.camera-panel { grid-column: 2; grid-row: 1; }
+#cam-canvas { width: 100%; display: block; }
+
+/* ALERTS / LOG */
+.log-panel { grid-column: 2; grid-row: 2; }
+.log-body {
+  padding: 12px 16px;
+  height: 220px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 2;
+}
+.log-entry { display: flex; gap: 12px; }
+.log-time { color: var(--txt3); flex-shrink: 0; }
+.log-type-info { color: var(--blue); }
+.log-type-warn { color: var(--amber); }
+.log-type-error { color: var(--red); }
+.log-type-ok { color: var(--green); }
+.log-msg { color: var(--txt2); }
+
+/* ── DETECTION PAGE ── */
+#detection {
+  min-height: calc(100vh - 56px);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+.detection-canvas-wrap {
+  position: relative;
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+#det-canvas { width: 100%; display: block; }
+.cam-hud {
+  position: absolute; top: 12px; left: 12px; right: 12px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  pointer-events: none;
+}
+.cam-hud-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.5);
+  padding: 4px 10px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+}
+.cam-reticle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 40px; height: 40px;
+  pointer-events: none;
+}
+.cam-reticle::before, .cam-reticle::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(34,197,94,0.6);
+}
+.cam-reticle::before {
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+}
+.cam-reticle::after {
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 4px; height: 4px;
+  background: rgba(34,197,94,0.8);
+  border-radius: 50%;
+  border: none;
+}
+
+.cnn-panel { display: flex; flex-direction: column; gap: 16px; }
+.conf-bar-wrap { padding: 16px; }
+.conf-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 10px;
+}
+.conf-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt2);
+  width: 80px;
+  flex-shrink: 0;
+}
+.conf-bar {
+  flex: 1; height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.conf-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.conf-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.lidar-vis {
+  padding: 16px;
+}
+.lidar-meter {
+  position: relative;
+  height: 100px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+#lidar-canvas { width: 100%; height: 100%; display: block; }
+
+.pid-panel { padding: 16px; }
+.pid-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.pid-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--txt2);
+}
+.pid-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── MAP PAGE ── */
+#map-page {
+  min-height: calc(100vh - 56px);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+}
+.map-wrap {
+  position: relative;
+  background: #0a1020;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 500px;
+}
+#map-canvas { width: 100%; height: 100%; display: block; }
+.map-legend {
+  position: absolute; bottom: 16px; left: 16px;
+  background: rgba(12,15,24,0.9);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px; color: var(--txt2);
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.map-sidebar { display: flex; flex-direction: column; gap: 16px; }
+.hotspot-list {
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.hotspot-item {
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hotspot-item:hover { border-color: var(--orange); }
+.hs-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--txt);
+  margin-bottom: 4px;
+}
+.hs-meta {
+  font-size: 11px;
+  color: var(--txt3);
+}
+.hs-severity {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  float: right;
+  margin-top: -18px;
+}
+
+/* ── REPORTS PAGE ── */
+#reports-page {
+  min-height: calc(100vh - 56px);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.report-form-wrap { padding: 24px; }
+.form-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 4px;
+  letter-spacing: 0.06em;
+}
+.form-sub {
+  font-size: 13px;
+  color: var(--txt3);
+  margin-bottom: 24px;
+}
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt2);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--txt);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--orange);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-select option { background: var(--bg2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+}
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(249,115,22,0.45);
+}
+.success-toast {
+  display: none;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--green);
+}
+
+.reports-feed { padding: 20px; overflow-y: auto; max-height: calc(100vh - 180px); }
+.report-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.rc-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.rc-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt);
+}
+.rc-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt3);
+}
+.rc-loc {
+  font-size: 12px;
+  color: var(--txt3);
+  margin-bottom: 8px;
+}
+.rc-desc {
+  font-size: 13px;
+  color: var(--txt2);
+  line-height: 1.5;
+}
+.rc-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.rc-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--txt3);
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  padding: 32px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.section-title span { color: var(--orange); }
+
+/* responsive canvas sizing */
+canvas { max-width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo"></div>
+    <span class="nav-title">FIREWATCH</span>
+    <span class="nav-badge">NASA SPACE APPS 2023</span>
+  </div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('hero')">HOME</button>
+    <button onclick="showPage('dashboard')"><span class="status-dot"></span>DRONE OPS</button>
+    <button onclick="showPage('detection')">CNN DETECT</button>
+    <button onclick="showPage('map-page')">SAT MAP</button>
+    <button onclick="showPage('reports-page')">REPORTS</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO PAGE ═══════════════════ -->
+<div class="page active" id="hero">
+  <canvas id="fire-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">NASA Space Apps Challenge · Bengaluru Team · 2023</div>
+    <h1 class="hero-h1">
+      Managing Fire<br>
+      <span>Democratizing</span><br>Wildfire Response
+    </h1>
+    <p class="hero-sub">
+      An autonomous drone platform integrating NASA satellite fire data, CNN-based thermal detection, 
+      and community reporting — putting wildfire response in the hands of local communities.
+    </p>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val">2m</div>
+        <div class="hero-stat-lbl">FOLLOW DISTANCE</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">2.5m</div>
+        <div class="hero-stat-lbl">MAX ALTITUDE</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">25fps</div>
+        <div class="hero-stat-lbl">DETECTION RATE</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">PID</div>
+        <div class="hero-stat-lbl">CONTROLLER</div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <button class="btn-primary" onclick="showPage('dashboard')">LAUNCH DEMO</button>
+      <button class="btn-outline" onclick="showPage('detection')">VIEW DETECTION</button>
+    </div>
+  </div>
+  <div class="hero-tech">
+    <span class="tech-pill">TensorRT</span>
+    <span class="tech-pill">MobileNet CNN</span>
+    <span class="tech-pill">OpenCV</span>
+    <span class="tech-pill">PID Controller</span>
+    <span class="tech-pill">LiDAR</span>
+    <span class="tech-pill">MAVLink</span>
+    <span class="tech-pill">NASA FIRMS</span>
+    <span class="tech-pill">Python 3.10</span>
+    <span class="tech-pill">DroneKit</span>
+    <span class="tech-pill">Figma</span>
+  </div>
+  <div class="scroll-indicator">SCROLL<div class="scroll-arrow"></div></div>
+</div>
+
+<!-- ═══════════════════ DRONE OPS ═══════════════════ -->
+<div class="page" id="dashboard">
+  <div class="section-header">
+    <span class="section-title">DRONE <span>OPS</span> CONSOLE</span>
+    <span class="panel-badge badge-green">SYSTEM ONLINE</span>
+  </div>
+  <div style="padding:16px; display:grid; grid-template-columns:300px 1fr; grid-template-rows: auto 1fr; gap:16px;">
+
+    <!-- State Machine Panel -->
+    <div class="panel drone-panel" style="grid-row:1/3;">
+      <div class="panel-head">
+        <span class="panel-title">STATE MACHINE</span>
+        <span class="panel-badge badge-orange" id="state-badge">TAKEOFF</span>
+      </div>
+      <div class="state-machine">
+        <div class="state-track">
+          <div class="state-item" id="s-takeoff">
+            <div class="state-line active" id="sl-1"></div>
+            <div class="state-circle current" id="sc-takeoff">01</div>
+            <div class="state-info">
+              <div class="state-name">TAKEOFF</div>
+              <div class="state-desc">Arming motors, climbing to 2.5m altitude. GPS lock verified.</div>
+              <div class="state-time" id="st-takeoff">→ 00:03</div>
+            </div>
+          </div>
+          <div class="state-item" id="s-search">
+            <div class="state-line" id="sl-2"></div>
+            <div class="state-circle" id="sc-search">02</div>
+            <div class="state-info">
+              <div class="state-name">SEARCH</div>
+              <div class="state-desc">Hovering, scanning 360° with MobileNet for heat signatures.</div>
+              <div class="state-time" id="st-search">Waiting...</div>
+            </div>
+          </div>
+          <div class="state-item" id="s-track">
+            <div class="state-line" id="sl-3"></div>
+            <div class="state-circle" id="sc-track">03</div>
+            <div class="state-info">
+              <div class="state-name">TRACK</div>
+              <div class="state-desc">Target locked. PID controlling yaw + Z-velocity via LiDAR.</div>
+              <div class="state-time" id="st-track">Waiting...</div>
+            </div>
+          </div>
+          <div class="state-item">
+            <div class="state-circle" id="sc-land">04</div>
+            <div class="state-info">
+              <div class="state-name">LAND</div>
+              <div class="state-desc">RTL sequence. Motors disarm on ground contact.</div>
+              <div class="state-time" id="st-land">Waiting...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-head" style="margin-top:0;">
+        <span class="panel-title">TELEMETRY</span>
+        <span class="panel-badge badge-blue" id="mode-badge">STABILIZE</span>
+      </div>
+      <div class="telemetry-grid">
+        <div class="telem-card">
+          <div class="telem-label">ALTITUDE</div>
+          <div class="telem-value orange" id="t-alt">0.0<span class="telem-unit">m</span></div>
+        </div>
+        <div class="telem-card">
+          <div class="telem-label">LIDAR DIST</div>
+          <div class="telem-value blue" id="t-lidar">—<span class="telem-unit">m</span></div>
+        </div>
+        <div class="telem-card">
+          <div class="telem-label">YAW CMD</div>
+          <div class="telem-value" id="t-yaw">0.0<span class="telem-unit">°</span></div>
+        </div>
+        <div class="telem-card">
+          <div class="telem-label">FWD VEL</div>
+          <div class="telem-value green" id="t-vel">0.0<span class="telem-unit">m/s</span></div>
+        </div>
+        <div class="telem-card">
+          <div class="telem-label">BATTERY</div>
+          <div class="telem-value" id="t-bat">87<span class="telem-unit">%</span></div>
+        </div>
+        <div class="telem-card">
+          <div class="telem-label">DETECTIONS</div>
+          <div class="telem-value orange" id="t-det">0</div>
+        </div>
+      </div>
+
+      <div class="drone-ctrl">
+        <div class="ctrl-row">
+          <button class="ctrl-btn active" id="btn-auto" onclick="setMode('auto')">AUTO</button>
+          <button class="ctrl-btn" id="btn-manual" onclick="setMode('manual')">MANUAL</button>
+          <button class="ctrl-btn danger" id="btn-rtl" onclick="triggerRTL()">RTL</button>
+        </div>
+        <div class="ctrl-row">
+          <button class="ctrl-btn" onclick="restartMission()">RESTART MISSION</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Camera preview on dashboard -->
+    <div class="panel camera-panel">
+      <div class="panel-head">
+        <span class="panel-title">FORWARD CAMERA FEED</span>
+        <span class="panel-badge badge-green" id="fps-badge">25.0 FPS</span>
+      </div>
+      <canvas id="dash-cam" style="width:100%;display:block;"></canvas>
+    </div>
+
+    <!-- Log Panel -->
+    <div class="panel log-panel">
+      <div class="panel-head">
+        <span class="panel-title">SYSTEM LOG</span>
+        <button onclick="clearLog()" style="background:none;border:none;color:var(--txt3);font-family:var(--font-mono);font-size:10px;cursor:pointer;letter-spacing:0.08em;">CLEAR</button>
+      </div>
+      <div class="log-body" id="log-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DETECTION ═══════════════════ -->
+<div class="page" id="detection">
+  <div class="section-header">
+    <span class="section-title">CNN <span>DETECTION</span> ENGINE</span>
+    <span class="panel-badge badge-orange">MOBILENET SSD ACTIVE</span>
+  </div>
+  <div style="padding:16px;display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;">
+    <div>
+      <div class="detection-canvas-wrap">
+        <canvas id="det-canvas"></canvas>
+        <div class="cam-hud">
+          <span class="cam-hud-tag" id="det-status">SCANNING...</span>
+          <span class="cam-hud-tag" id="det-fps">— FPS</span>
+        </div>
+        <div class="cam-reticle"></div>
+      </div>
+    </div>
+    <div class="cnn-panel">
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">CNN CONFIDENCE</span></div>
+        <div class="conf-bar-wrap">
+          <div class="conf-row">
+            <span class="conf-label">FIRE</span>
+            <div class="conf-bar"><div class="conf-fill" id="cf-fire" style="width:0%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div>
+            <span class="conf-pct" id="cp-fire">0%</span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">SMOKE</span>
+            <div class="conf-bar"><div class="conf-fill" id="cf-smoke" style="width:0%;background:linear-gradient(90deg,#6b7280,#d1d5db)"></div></div>
+            <span class="conf-pct" id="cp-smoke">0%</span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">PERSON</span>
+            <div class="conf-bar"><div class="conf-fill" id="cf-person" style="width:0%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div>
+            <span class="conf-pct" id="cp-person">0%</span>
+          </div>
+          <div class="conf-row">
+            <span class="conf-label">CLEAR</span>
+            <div class="conf-bar"><div class="conf-fill" id="cf-clear" style="width:80%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div></div>
+            <span class="conf-pct" id="cp-clear">80%</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">LIDAR DISTANCE</span></div>
+        <div class="lidar-vis">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--txt3);">DISTANCE TO TARGET</span>
+            <span style="font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--cyan);" id="lidar-readout">—m</span>
+          </div>
+          <div class="lidar-meter">
+            <canvas id="lidar-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">PID OUTPUT</span></div>
+        <div class="pid-panel">
+          <div class="pid-row">
+            <span class="pid-name">X_DELTA (IMAGE)</span>
+            <span class="pid-val orange" id="pid-x">0.000</span>
+          </div>
+          <div class="pid-row">
+            <span class="pid-name">Z_DELTA (DEPTH)</span>
+            <span class="pid-val blue" id="pid-z">0.000</span>
+          </div>
+          <div class="pid-row">
+            <span class="pid-name">YAW COMMAND</span>
+            <span class="pid-val" id="pid-yaw">0.000 °</span>
+          </div>
+          <div class="pid-row">
+            <span class="pid-name">FWD VELOCITY</span>
+            <span class="pid-val green" id="pid-vel">0.000 m/s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SATELLITE MAP ═══════════════════ -->
+<div class="page" id="map-page">
+  <div class="section-header">
+    <span class="section-title">NASA <span>SATELLITE</span> FIRE MAP</span>
+    <span class="panel-badge badge-amber">FIRMS DATA LIVE</span>
+  </div>
+  <div style="padding:16px;display:grid;grid-template-columns:1fr 300px;gap:16px;">
+    <div class="map-wrap" style="height:calc(100vh - 180px);">
+      <canvas id="map-canvas"></canvas>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444;box-shadow:0 0 8px #ef4444"></div>High Severity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f97316;box-shadow:0 0 6px #f97316"></div>Medium Severity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;box-shadow:0 0 4px #fbbf24"></div>Low Severity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Drone Deployed</div>
+      </div>
+    </div>
+    <div class="map-sidebar">
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">ACTIVE HOTSPOTS</span><span class="panel-badge badge-red" id="hs-count">0</span></div>
+        <div class="hotspot-list" id="hotspot-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span class="panel-title">SATELLITE INFO</span></div>
+        <div style="padding:14px;">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--txt3);margin-bottom:6px;">DATA SOURCE</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--orange);margin-bottom:14px;">NASA FIRMS (MODIS/VIIRS)</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--txt3);margin-bottom:6px;">SCAN INTERVAL</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--txt);margin-bottom:14px;">Every 12 hours</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--txt3);margin-bottom:6px;">RESOLUTION</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--txt);">375m (VIIRS) / 1km (MODIS)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ REPORTS ═══════════════════ -->
+<div class="page" id="reports-page">
+  <div class="section-header">
+    <span class="section-title">COMMUNITY <span>FIRE</span> REPORTS</span>
+    <span class="panel-badge badge-blue" id="report-count-badge">— reports</span>
+  </div>
+  <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="panel">
+      <div class="report-form-wrap">
+        <div class="form-title">REPORT A FIRE</div>
+        <div class="form-sub">Help your community respond faster. All reports are verified and dispatched to nearby drone units.</div>
+        <div class="form-group">
+          <label class="form-label">REPORT TYPE</label>
+          <select class="form-select" id="report-type">
+            <option value="">Select type...</option>
+            <option>Active Fire</option>
+            <option>Suspicious Smoke</option>
+            <option>Ember Shower</option>
+            <option>Controlled Burn</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">LATITUDE</label>
+            <input class="form-input" id="r-lat" type="text" placeholder="12.9716">
+          </div>
+          <div class="form-group">
+            <label class="form-label">LONGITUDE</label>
+            <input class="form-input" id="r-lon" type="text" placeholder="77.5946">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">LOCATION NAME</label>
+          <input class="form-input" id="r-loc" type="text" placeholder="Bannerghatta National Park, Karnataka">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SEVERITY</label>
+          <select class="form-select" id="r-sev">
+            <option>Low — Small smoke, no visible flame</option>
+            <option>Medium — Visible flame, spreading slowly</option>
+            <option>High — Large fire, rapid spread</option>
+            <option>Critical — Life-threatening, immediate response</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">DESCRIPTION</label>
+          <textarea class="form-textarea" id="r-desc" placeholder="Describe what you see: direction of spread, terrain, nearby structures..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitReport()">SUBMIT REPORT</button>
+        <div class="success-toast" id="success-toast">
+          ✓ Report received — Dispatching nearest drone unit. ETA: 4 min.
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">LIVE REPORT FEED</span>
+        <span class="panel-badge badge-orange" id="reports-live-badge">LIVE</span>
+      </div>
+      <div class="reports-feed" id="reports-feed"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ PAGE ROUTING ═══════════════ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  const map = { 'hero':0,'dashboard':1,'detection':2,'map-page':3,'reports-page':4 };
+  document.querySelectorAll('.nav-links button')[map[id]]?.classList.add('active');
+}
+
+/* ═══════════════ FIRE PARTICLE CANVAS (HERO) ═══════════════ */
+const fc = document.getElementById('fire-canvas');
+const fctx = fc.getContext('2d');
+let particles = [];
+function resizeFireCanvas() {
+  fc.width = window.innerWidth;
+  fc.height = window.innerHeight;
+}
+resizeFireCanvas();
+window.addEventListener('resize', resizeFireCanvas);
+class Particle {
+  constructor() { this.reset(); this.y = Math.random() * fc.height; }
+  reset() {
+    this.x = Math.random() * fc.width;
+    this.y = fc.height + 10;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = -(Math.random() * 2 + 0.8);
+    this.life = 1;
+    this.decay = Math.random() * 0.006 + 0.003;
+    this.size = Math.random() * 3 + 1;
+    this.hue = Math.random() * 40 + 10;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= this.decay;
+    if (this.life <= 0) this.reset();
+  }
+  draw() {
+    fctx.save();
+    fctx.globalAlpha = this.life * 0.35;
+    fctx.fillStyle = `hsl(${this.hue}, 90%, 55%)`;
+    fctx.beginPath();
+    fctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    fctx.fill();
+    fctx.restore();
+  }
+}
+for (let i = 0; i < 200; i++) particles.push(new Particle());
+function animateFire() {
+  fctx.clearRect(0, 0, fc.width, fc.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animateFire);
+}
+animateFire();
+
+/* ═══════════════ DRONE STATE MACHINE ═══════════════ */
+const STATES = ['takeoff','search','track','land'];
+let currentStateIdx = 0;
+let stateTimer = 0;
+let droneMode = 'auto';
+let detectionCount = 0;
+let battery = 87;
+
+const stateTimings = { takeoff: 5000, search: 8000, track: 20000, land: 4000 };
+const stateBadgeColors = { takeoff:'badge-orange', search:'badge-blue', track:'badge-green', land:'badge-red' };
+const stateLabels = { takeoff:'TAKEOFF', search:'SEARCH', track:'TRACKING', land:'LANDING' };
+
+function updateStateMachine() {
+  STATES.forEach((s, i) => {
+    const circle = document.getElementById(`sc-${s}`);
+    const line = document.getElementById(`sl-${i+1}`);
+    circle.className = 'state-circle';
+    if (line) line.className = 'state-line';
+    if (i < currentStateIdx) {
+      circle.className = 'state-circle done';
+      circle.textContent = '✓';
+      if (line) line.className = 'state-line active';
+    } else if (i === currentStateIdx) {
+      circle.className = 'state-circle current';
+      circle.textContent = `0${i+1}`;
+    } else {
+      circle.textContent = `0${i+1}`;
+    }
+  });
+  const s = STATES[currentStateIdx];
+  const badge = document.getElementById('state-badge');
+  badge.className = `panel-badge ${stateBadgeColors[s]}`;
+  badge.textContent = stateLabels[s];
+  const modes = { takeoff:'GUIDED', search:'LOITER', track:'GUIDED', land:'LAND' };
+  document.getElementById('mode-badge').textContent = modes[s];
+}
+
+function advanceState() {
+  const s = STATES[currentStateIdx];
+  const tEl = document.getElementById(`st-${s}`);
+  const now = new Date();
+  tEl.textContent = `Done @ ${now.toLocaleTimeString()}`;
+  if (currentStateIdx < STATES.length - 1) {
+    currentStateIdx++;
+    updateStateMachine();
+    scheduleNextState();
+    addLog(stateLogMsg(STATES[currentStateIdx]));
+  }
+}
+
+function stateLogMsg(s) {
+  const msgs = {
+    takeoff: ['info','Arming motors — pre-flight checks passed'],
+    search: ['ok','Altitude 2.5m reached — beginning 360° scan'],
+    track: ['warn','Target detected! Engaging PID tracking mode'],
+    land: ['ok','Mission complete — initiating landing sequence']
+  };
+  return msgs[s];
+}
+
+function scheduleNextState() {
+  if (droneMode !== 'auto') return;
+  const s = STATES[currentStateIdx];
+  stateTimer = setTimeout(() => {
+    if (s === 'track') detectionCount++;
+    advanceState();
+  }, stateTimings[s]);
+}
+
+function setMode(mode) {
+  droneMode = mode;
+  document.getElementById('btn-auto').classList.toggle('active', mode==='auto');
+  document.getElementById('btn-manual').classList.toggle('active', mode==='manual');
+  if (mode === 'auto') { scheduleNextState(); addLog(['info','Switched to AUTO mode']); }
+  else { clearTimeout(stateTimer); addLog(['warn','Switched to MANUAL mode — state machine paused']); }
+}
+
+function triggerRTL() {
+  clearTimeout(stateTimer);
+  currentStateIdx = 3;
+  updateStateMachine();
+  document.getElementById('btn-rtl').classList.add('active');
+  addLog(['error','RTL TRIGGERED — returning to home']);
+  setTimeout(() => document.getElementById('btn-rtl').classList.remove('active'), 3000);
+}
+
+function restartMission() {
+  clearTimeout(stateTimer);
+  currentStateIdx = 0;
+  document.querySelectorAll('.state-circle').forEach((c,i) => {
+    c.className = 'state-circle';
+    c.textContent = `0${i+1}`;
+  });
+  STATES.forEach(s => document.getElementById(`st-${s}`).textContent = 'Waiting...');
+  updateStateMachine();
+  addLog(['info','Mission restarted — reinitializing systems']);
+  if (droneMode === 'auto') scheduleNextState();
+}
+
+/* ═══════════════ TELEMETRY ANIMATION ═══════════════ */
+let altTarget = 0, altCurrent = 0;
+let lidarCurrent = 0;
+let yawCurrent = 0;
+let velCurrent = 0;
+let batTick = 0;
+
+function updateTelemetry() {
+  const s = STATES[currentStateIdx];
+  if (s === 'takeoff') { altTarget = 2.5; lidarCurrent = 0; yawCurrent = 0; velCurrent = 0; }
+  else if (s === 'search') { altTarget = 2.5; lidarCurrent = 0; yawCurrent = (Math.random()-0.5)*20; velCurrent = 0; }
+  else if (s === 'track') {
+    altTarget = 2.5;
+    lidarCurrent += (Math.random()-0.5)*0.15;
+    lidarCurrent = Math.max(1.0, Math.min(4.0, lidarCurrent));
+    yawCurrent += (Math.random()-0.5)*8;
+    velCurrent = (Math.random()-0.5)*1.2;
+    detectionCount = 1;
+  }
+  else if (s === 'land') { altTarget = 0; lidarCurrent = 0; velCurrent = 0; yawCurrent = 0; }
+
+  altCurrent += (altTarget - altCurrent) * 0.08;
+  batTick++;
+  if (batTick % 60 === 0 && s !== 'land') battery = Math.max(5, battery - 0.5);
+
+  document.getElementById('t-alt').innerHTML = altCurrent.toFixed(1) + '<span class="telem-unit">m</span>';
+  document.getElementById('t-lidar').innerHTML = (s==='track' ? lidarCurrent.toFixed(2) : '—') + '<span class="telem-unit">m</span>';
+  document.getElementById('t-yaw').innerHTML = yawCurrent.toFixed(1) + '<span class="telem-unit">°</span>';
+  document.getElementById('t-vel').innerHTML = velCurrent.toFixed(2) + '<span class="telem-unit">m/s</span>';
+  document.getElementById('t-bat').innerHTML = Math.round(battery) + '<span class="telem-unit">%</span>';
+  document.getElementById('t-det').textContent = detectionCount;
+}
+setInterval(updateTelemetry, 150);
+
+/* ═══════════════ DASHBOARD CAMERA CANVAS ═══════════════ */
+const dc = document.getElementById('dash-cam');
+const dctx = dc.getContext('2d');
+dc.width = 600; dc.height = 280;
+
+let boxX=180, boxY=80, boxW=110, boxH=160, boxVx=0.6, boxVy=0.3;
+let fpsDisplay = 25.0;
+
+function drawDashCam() {
+  const s = STATES[currentStateIdx];
+  dctx.fillStyle = '#050810';
+  dctx.fillRect(0,0,dc.width,dc.height);
+
+  // Fake terrain gradient
+  const g = dctx.createLinearGradient(0,0,0,dc.height);
+  g.addColorStop(0,'#0a1525');
+  g.addColorStop(0.5,'#0f1e10');
+  g.addColorStop(1,'#121208');
+  dctx.fillStyle = g;
+  dctx.fillRect(0,0,dc.width,dc.height);
+
+  // Noise texture sim
+  for (let i=0;i<60;i++) {
+    dctx.fillStyle = `rgba(255,255,255,${Math.random()*0.015})`;
+    dctx.fillRect(Math.random()*dc.width, Math.random()*dc.height, 1, 1);
+  }
+
+  // Grid overlay
+  dctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  dctx.lineWidth = 0.5;
+  for (let x=0;x<dc.width;x+=40) { dctx.beginPath(); dctx.moveTo(x,0); dctx.lineTo(x,dc.height); dctx.stroke(); }
+  for (let y=0;y<dc.height;y+=40) { dctx.beginPath(); dctx.moveTo(0,y); dctx.lineTo(dc.width,y); dctx.stroke(); }
+
+  // Horizon line
+  dctx.strokeStyle = 'rgba(100,150,100,0.15)';
+  dctx.lineWidth = 1;
+  dctx.beginPath(); dctx.moveTo(0,dc.height*0.55); dctx.lineTo(dc.width,dc.height*0.55); dctx.stroke();
+
+  if (s === 'track' || s === 'search') {
+    // Animate bounding box
+    boxX += boxVx; boxY += boxVy;
+    if (boxX < 20 || boxX+boxW > dc.width-20) boxVx *= -1;
+    if (boxY < 10 || boxY+boxH > dc.height-10) boxVy *= -1;
+
+    if (s === 'track') {
+      // Bounding box
+      dctx.strokeStyle = '#ef4444';
+      dctx.lineWidth = 2;
+      dctx.strokeRect(boxX, boxY, boxW, boxH);
+      // Corner accents
+      const cl = 14;
+      [[boxX,boxY],[boxX+boxW,boxY],[boxX,boxY+boxH],[boxX+boxW,boxY+boxH]].forEach(([cx,cy],i) => {
+        dctx.strokeStyle = '#f97316';
+        dctx.lineWidth = 2;
+        dctx.beginPath();
+        dctx.moveTo(cx + (i%2===0?cl:-cl), cy);
+        dctx.lineTo(cx, cy);
+        dctx.lineTo(cx, cy + (i<2?cl:-cl));
+        dctx.stroke();
+      });
+      // Label
+      dctx.fillStyle = '#ef4444';
+      dctx.fillRect(boxX, boxY-18, 130, 16);
+      dctx.fillStyle = 'white';
+      dctx.font = '10px JetBrains Mono, monospace';
+      dctx.fillText(`FIRE_DETECT  ${(Math.random()*5+93).toFixed(1)}%`, boxX+4, boxY-5);
+      // Crosshair to center
+      const cx2 = dc.width/2, cy2 = dc.height/2;
+      const bCx = boxX+boxW/2, bCy = boxY+boxH/2;
+      dctx.strokeStyle = 'rgba(59,130,246,0.5)';
+      dctx.lineWidth = 1;
+      dctx.setLineDash([4,4]);
+      dctx.beginPath(); dctx.moveTo(cx2,cy2); dctx.lineTo(bCx,bCy); dctx.stroke();
+      dctx.setLineDash([]);
+      // Delta indicator
+      dctx.fillStyle = 'rgba(59,130,246,0.8)';
+      dctx.font = '10px JetBrains Mono, monospace';
+      dctx.fillText(`Δx:${(bCx-cx2).toFixed(0)} Δy:${(bCy-cy2).toFixed(0)}`, cx2+6, cy2-6);
+    }
+    // Secondary detection
+    if (s === 'track' && Math.random() < 0.3) {
+      dctx.strokeStyle = 'rgba(245,158,11,0.5)';
+      dctx.lineWidth = 1;
+      dctx.strokeRect(boxX+130, boxY+40, 70, 100);
+      dctx.fillStyle = 'rgba(245,158,11,0.7)';
+      dctx.font = '9px JetBrains Mono, monospace';
+      dctx.fillText('SMOKE 67%', boxX+133, boxY+37);
+    }
+  }
+
+  // HUD overlays
+  dctx.fillStyle = 'rgba(34,197,94,0.8)';
+  dctx.font = '10px JetBrains Mono, monospace';
+  dctx.fillText(`ALT: ${altCurrent.toFixed(1)}m`, 8, 16);
+  dctx.fillText(`STATE: ${STATES[currentStateIdx].toUpperCase()}`, 8, 30);
+  if (s === 'track') dctx.fillText(`LIDAR: ${lidarCurrent.toFixed(2)}m`, 8, 44);
+
+  // Crosshair center
+  const cx = dc.width/2, cy = dc.height/2;
+  dctx.strokeStyle = 'rgba(34,197,94,0.6)';
+  dctx.lineWidth = 1;
+  dctx.beginPath();
+  dctx.arc(cx, cy, 16, 0, Math.PI*2);
+  dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(cx-24,cy); dctx.lineTo(cx-18,cy); dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(cx+18,cy); dctx.lineTo(cx+24,cy); dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(cx,cy-24); dctx.lineTo(cx,cy-18); dctx.stroke();
+  dctx.beginPath(); dctx.moveTo(cx,cy+18); dctx.lineTo(cx,cy+24); dctx.stroke();
+
+  fpsDisplay += (Math.random()-0.5)*0.8;
+  fpsDisplay = Math.max(23.5, Math.min(26.5, fpsDisplay));
+  document.getElementById('fps-badge').textContent = fpsDisplay.toFixed(1) + ' FPS';
+}
+setInterval(drawDashCam, 40);
+
+/* ═══════════════ DETECTION CANVAS ═══════════════ */
+const detC = document.getElementById('det-canvas');
+const detCtx = detC.getContext('2d');
+detC.width = 640; detC.height = 420;
+let detBoxX=180, detBoxY=100, detBoxW=130, detBoxH=180;
+let detBVx=0.8, detBVy=0.4;
+let fireConf=0, smokeConf=0, personConf=0;
+let lidarHistory = [];
+let lidarTarget = 2.0;
+let lidarCur = 2.0;
+let detState = 'scanning'; // scanning | locked
+
+function drawDetCanvas() {
+  const W=detC.width, H=detC.height;
+  detCtx.fillStyle='#020408';
+  detCtx.fillRect(0,0,W,H);
+
+  // thermal gradient background
+  for(let y=0;y<H;y+=4) {
+    const t = y/H;
+    const r=Math.floor(10+t*8), g2=Math.floor(25+t*15), b=Math.floor(12+t*10);
+    detCtx.fillStyle=`rgb(${r},${g2},${b})`;
+    detCtx.fillRect(0,y,W,4);
+  }
+
+  // noise
+  for(let i=0;i<80;i++){
+    detCtx.fillStyle=`rgba(255,255,255,${Math.random()*0.02})`;
+    detCtx.fillRect(Math.random()*W,Math.random()*H,1,1);
+  }
+
+  // Scanlines
+  for(let y=0;y<H;y+=2){
+    detCtx.fillStyle='rgba(0,0,0,0.08)';
+    detCtx.fillRect(0,y,W,1);
+  }
+
+  // Fire "heat blob"
+  if (detState === 'locked' || Math.random() < 0.6) {
+    detBoxX += detBVx + (Math.random()-0.5)*0.3;
+    detBoxY += detBVy + (Math.random()-0.5)*0.2;
+    if (detBoxX<20||detBoxX+detBoxW>W-20) detBVx*=-1;
+    if (detBoxY<20||detBoxY+detBoxH>H-20) detBVy*=-1;
+
+    // Fire glow
+    const radG = detCtx.createRadialGradient(
+      detBoxX+detBoxW/2, detBoxY+detBoxH/2, 0,
+      detBoxX+detBoxW/2, detBoxY+detBoxH/2, Math.max(detBoxW,detBoxH)*0.8
+    );
+    radG.addColorStop(0,'rgba(249,115,22,0.5)');
+    radG.addColorStop(0.5,'rgba(239,68,68,0.2)');
+    radG.addColorStop(1,'rgba(0,0,0,0)');
+    detCtx.fillStyle=radG;
+    detCtx.fillRect(detBoxX-40,detBoxY-40,detBoxW+80,detBoxH+80);
+
+    // Detection box
+    detCtx.strokeStyle='#ef4444';
+    detCtx.lineWidth=2;
+    detCtx.strokeRect(detBoxX,detBoxY,detBoxW,detBoxH);
+    const cLen=12;
+    [[detBoxX,detBoxY],[detBoxX+detBoxW,detBoxY],[detBoxX,detBoxY+detBoxH],[detBoxX+detBoxW,detBoxY+detBoxH]]
+      .forEach(([bx,by],i)=>{
+        detCtx.strokeStyle='#f97316';
+        detCtx.beginPath();
+        detCtx.moveTo(bx+(i%2===0?cLen:-cLen),by);
+        detCtx.lineTo(bx,by);
+        detCtx.lineTo(bx,by+(i<2?cLen:-cLen));
+        detCtx.stroke();
+      });
+    
+    detCtx.fillStyle='rgba(239,68,68,0.85)';
+    detCtx.fillRect(detBoxX,detBoxY-20,150,18);
+    detCtx.fillStyle='white';
+    detCtx.font='11px JetBrains Mono, monospace';
+    const cf = (85+Math.random()*12).toFixed(1);
+    detCtx.fillText(`FIRE_CLASS  CONF:${cf}%`, detBoxX+4,detBoxY-6);
+
+    // Update CNN bars
+    fireConf = parseFloat(cf)/100;
+    smokeConf = Math.random()*0.4+0.3;
+    personConf = Math.random()*0.2;
+    detState = 'locked';
+    document.getElementById('det-status').textContent = '🔴 TARGET LOCKED';
+  } else {
+    fireConf *= 0.9;
+    smokeConf *= 0.85;
+    personConf *= 0.9;
+    detState = 'scanning';
+    document.getElementById('det-status').textContent = '◎ SCANNING...';
+  }
+
+  const clearConf = 1-Math.max(fireConf, smokeConf, personConf);
+  ['fire','smoke','person','clear'].forEach((k,i)=>{
+    const vals=[fireConf,smokeConf,personConf,clearConf];
+    const v=Math.max(0,Math.min(1,vals[i]));
+    document.getElementById(`cf-${k}`).style.width=`${(v*100).toFixed(1)}%`;
+    document.getElementById(`cp-${k}`).textContent=`${(v*100).toFixed(0)}%`;
+  });
+
+  // LiDAR
+  lidarTarget = detState==='locked' ? 1.5+Math.sin(Date.now()/2000)*0.5 : 0;
+  lidarCur += (lidarTarget - lidarCur)*0.06;
+  lidarHistory.push(lidarCur);
+  if(lidarHistory.length>80) lidarHistory.shift();
+  document.getElementById('lidar-readout').textContent = lidarCur>0.1 ? lidarCur.toFixed(2)+'m' : '—';
+
+  // Draw lidar canvas
+  const lc=document.getElementById('lidar-canvas');
+  const lctx=lc.getContext('2d');
+  lc.width=lc.offsetWidth||280; lc.height=100;
+  lctx.clearRect(0,0,lc.width,lc.height);
+  lctx.fillStyle='#0c0f18';
+  lctx.fillRect(0,0,lc.width,lc.height);
+  // Grid
+  lctx.strokeStyle='rgba(255,255,255,0.04)';
+  lctx.lineWidth=0.5;
+  for(let x=0;x<lc.width;x+=20){lctx.beginPath();lctx.moveTo(x,0);lctx.lineTo(x,lc.height);lctx.stroke();}
+  // Plot
+  if(lidarHistory.length>1){
+    lctx.strokeStyle='#06b6d4';
+    lctx.lineWidth=1.5;
+    lctx.beginPath();
+    lidarHistory.forEach((v,i)=>{
+      const x=i/lidarHistory.length*lc.width;
+      const y=lc.height - (v/4)*lc.height*0.8 - 5;
+      i===0?lctx.moveTo(x,y):lctx.lineTo(x,y);
+    });
+    lctx.stroke();
+    // Fill under
+    lctx.fillStyle='rgba(6,182,212,0.08)';
+    const lastX=lc.width, lastV=lidarHistory[lidarHistory.length-1];
+    lctx.lineTo(lastX, lc.height);
+    lctx.lineTo(0, lc.height);
+    lctx.fill();
+  }
+  // Threshold line
+  lctx.strokeStyle='rgba(249,115,22,0.4)';
+  lctx.lineWidth=1;
+  lctx.setLineDash([4,4]);
+  const thY=lc.height-(2/4)*lc.height*0.8-5;
+  lctx.beginPath();lctx.moveTo(0,thY);lctx.lineTo(lc.width,thY);lctx.stroke();
+  lctx.setLineDash([]);
+  lctx.fillStyle='rgba(249,115,22,0.7)';
+  lctx.font='9px JetBrains Mono, monospace';
+  lctx.fillText('MAX FOLLOW DIST',4,thY-3);
+
+  // PID
+  const xDelta=(detBoxX+detBoxW/2-W/2)/W;
+  const zDelta=lidarCur-2.0;
+  document.getElementById('pid-x').textContent=xDelta.toFixed(3);
+  document.getElementById('pid-z').textContent=zDelta.toFixed(3);
+  document.getElementById('pid-yaw').textContent=(xDelta*45).toFixed(3)+' °';
+  document.getElementById('pid-vel').textContent=(-zDelta*0.5).toFixed(3)+' m/s';
+  document.getElementById('det-fps').textContent=fpsDisplay.toFixed(1)+' FPS';
+
+  // Draw crosshair
+  const cxD=W/2, cyD=H/2;
+  detCtx.strokeStyle='rgba(34,197,94,0.5)';
+  detCtx.lineWidth=1;
+  detCtx.beginPath();detCtx.arc(cxD,cyD,20,0,Math.PI*2);detCtx.stroke();
+  [[cxD-30,cyD,cxD-22,cyD],[cxD+22,cyD,cxD+30,cyD],[cxD,cyD-30,cxD,cyD-22],[cxD,cyD+22,cxD,cyD+30]]
+    .forEach(([x1,y1,x2,y2])=>{detCtx.beginPath();detCtx.moveTo(x1,y1);detCtx.lineTo(x2,y2);detCtx.stroke();});
+}
+setInterval(drawDetCanvas, 40);
+
+/* ═══════════════ SATELLITE MAP ═══════════════ */
+const mapC = document.getElementById('map-canvas');
+const mapCtx = mapC.getContext('2d');
+const hotspots = [
+  { name:'Bannerghatta Forest', lat:12.8, lon:77.57, sev:'HIGH', color:'#ef4444', r:18, desc:'Rapidly spreading, 2km radius' },
+  { name:'Nilgiri Hills Zone B', lat:11.4, lon:76.6, sev:'MED', color:'#f97316', r:13, desc:'Active fire, stable boundary' },
+  { name:'Kodagu Reserve', lat:12.3, lon:75.8, sev:'HIGH', color:'#ef4444', r:22, desc:'Critical — wildlife corridor threat' },
+  { name:'Malnad Region', lat:13.3, lon:75.5, sev:'LOW', color:'#fbbf24', r:9, desc:'Smoke detected, monitoring' },
+  { name:'BRT Tiger Reserve', lat:11.9, lon:77.0, sev:'MED', color:'#f97316', r:15, desc:'Controlled patch, wind-driven' },
+  { name:'Shola Forest Ooty', lat:11.4, lon:76.7, sev:'LOW', color:'#fbbf24', r:8, desc:'Minimal, no spread pattern' },
+];
+const dronePos = { lat:12.05, lon:77.1, color:'#22c55e' };
+
+function latLonToCanvas(lat, lon, W, H) {
+  const latMin=10.8, latMax=13.9, lonMin=74.6, lonMax=78.5;
+  const x=(lon-lonMin)/(lonMax-lonMin)*W;
+  const y=H-(lat-latMin)/(latMax-latMin)*H;
+  return { x, y };
+}
+
+function drawMap() {
+  const W=mapC.offsetWidth||700, H=mapC.offsetHeight||500;
+  mapC.width=W; mapC.height=H;
+
+  // Background - map-like
+  const bgG=mapCtx.createLinearGradient(0,0,0,H);
+  bgG.addColorStop(0,'#0a1520');
+  bgG.addColorStop(1,'#0d1a0e');
+  mapCtx.fillStyle=bgG;
+  mapCtx.fillRect(0,0,W,H);
+
+  // Grid lines (lat/lon)
+  mapCtx.strokeStyle='rgba(255,255,255,0.04)';
+  mapCtx.lineWidth=0.5;
+  for(let lat=11;lat<=14;lat++){
+    const {x:x1,y:y1}=latLonToCanvas(lat,74.6,W,H);
+    const {x:x2,y:y2}=latLonToCanvas(lat,78.5,W,H);
+    mapCtx.beginPath();mapCtx.moveTo(x1,y1);mapCtx.lineTo(x2,y2);mapCtx.stroke();
+    mapCtx.fillStyle='rgba(255,255,255,0.15)';
+    mapCtx.font='9px JetBrains Mono, monospace';
+    mapCtx.fillText(`${lat}°N`,4,y1-2);
+  }
+  for(let lon=75;lon<=79;lon++){
+    const {x:x1,y:y1}=latLonToCanvas(10.8,lon,W,H);
+    const {x:x2,y:y2}=latLonToCanvas(13.9,lon,W,H);
+    mapCtx.beginPath();mapCtx.moveTo(x1,y1);mapCtx.lineTo(x2,y2);mapCtx.stroke();
+    mapCtx.fillStyle='rgba(255,255,255,0.15)';
+    mapCtx.font='9px JetBrains Mono, monospace';
+    mapCtx.fillText(`${lon}°E`,x1+2,H-4);
+  }
+
+  // Region label
+  mapCtx.fillStyle='rgba(255,255,255,0.06)';
+  mapCtx.font='bold 28px Orbitron, monospace';
+  mapCtx.textAlign='center';
+  mapCtx.fillText('KARNATAKA',W/2,H/2+14);
+  mapCtx.textAlign='left';
+
+  // Draw hotspots
+  hotspots.forEach(hs=>{
+    const {x,y}=latLonToCanvas(hs.lat,hs.lon,W,H);
+    const pulse=(Math.sin(Date.now()/500+hs.r)*0.4+0.6);
+    const glow=mapCtx.createRadialGradient(x,y,0,x,y,hs.r*2.5);
+    glow.addColorStop(0,hs.color+'88');
+    glow.addColorStop(1,hs.color+'00');
+    mapCtx.fillStyle=glow;
+    mapCtx.beginPath();mapCtx.arc(x,y,hs.r*2.5*pulse,0,Math.PI*2);mapCtx.fill();
+    mapCtx.fillStyle=hs.color;
+    mapCtx.beginPath();mapCtx.arc(x,y,hs.r*0.7,0,Math.PI*2);mapCtx.fill();
+    mapCtx.fillStyle='rgba(255,255,255,0.8)';
+    mapCtx.font='10px JetBrains Mono, monospace';
+    mapCtx.fillText(hs.name,x+hs.r+4,y+4);
+  });
+
+  // Drone position
+  const {x:dx,y:dy}=latLonToCanvas(dronePos.lat,dronePos.lon,W,H);
+  const dp=(Math.sin(Date.now()/400)*0.3+0.7);
+  mapCtx.strokeStyle='rgba(34,197,94,0.3)';
+  mapCtx.lineWidth=1;
+  mapCtx.beginPath();mapCtx.arc(dx,dy,20*dp,0,Math.PI*2);mapCtx.stroke();
+  mapCtx.fillStyle='#22c55e';
+  mapCtx.beginPath();
+  mapCtx.moveTo(dx,dy-7);mapCtx.lineTo(dx+5,dy+4);mapCtx.lineTo(dx-5,dy+4);
+  mapCtx.closePath();mapCtx.fill();
+  mapCtx.fillStyle='rgba(34,197,94,0.8)';
+  mapCtx.font='10px JetBrains Mono, monospace';
+  mapCtx.fillText('DRONE-01',dx+8,dy+4);
+
+  // Line from drone to nearest fire
+  const nearest=hotspots[0];
+  const {x:nx,y:ny}=latLonToCanvas(nearest.lat,nearest.lon,W,H);
+  mapCtx.strokeStyle='rgba(34,197,94,0.25)';
+  mapCtx.lineWidth=1;
+  mapCtx.setLineDash([4,6]);
+  mapCtx.beginPath();mapCtx.moveTo(dx,dy);mapCtx.lineTo(nx,ny);mapCtx.stroke();
+  mapCtx.setLineDash([]);
+}
+
+function populateHotspotList(){
+  const list=document.getElementById('hotspot-list');
+  list.innerHTML='';
+  hotspots.forEach(hs=>{
+    const div=document.createElement('div');
+    div.className='hotspot-item';
+    const sev=hs.sev==='HIGH'?'badge-red':hs.sev==='MED'?'badge-orange':'badge-amber';
+    div.innerHTML=`
+      <div class="hs-name">${hs.name}</div>
+      <span class="panel-badge ${sev} hs-severity">${hs.sev}</span>
+      <div class="hs-meta">${hs.desc}</div>`;
+    list.appendChild(div);
+  });
+  document.getElementById('hs-count').textContent=hotspots.length;
+}
+populateHotspotList();
+function mapLoop(){ drawMap(); requestAnimationFrame(mapLoop); }
+mapLoop();
+
+/* ═══════════════ SYSTEM LOG ═══════════════ */
+const logTypes=['info','warn','error','ok'];
+function addLog([type, msg]) {
+  const body=document.getElementById('log-body');
+  const t=new Date().toLocaleTimeString('en',{hour12:false});
+  const line=document.createElement('div');
+  line.className='log-entry';
+  line.innerHTML=`<span class="log-time">${t}</span><span class="log-type-${type}">[${type.toUpperCase().padEnd(5)}]</span><span class="log-msg">${msg}</span>`;
+  body.appendChild(line);
+  body.scrollTop=body.scrollHeight;
+}
+function clearLog() { document.getElementById('log-body').innerHTML=''; }
+// Initial logs
+setTimeout(()=>{ addLog(['info','Connecting to LiDAR on /dev/ttyTHS1']); },300);
+setTimeout(()=>{ addLog(['ok','LiDAR connected — 2D scan active']); },800);
+setTimeout(()=>{ addLog(['info','Initializing MobileNet SSD detector...']); },1300);
+setTimeout(()=>{ addLog(['ok','Detector initialized — 300ms warm-up complete']); },2000);
+setTimeout(()=>{ addLog(['info','Connecting to drone on /dev/ttyACM0']); },2400);
+setTimeout(()=>{ addLog(['ok','MAVLink connection established — heartbeat received']); },3000);
+setTimeout(()=>{ addLog(['info','PID controller configured — mode: PID']); },3200);
+setTimeout(()=>{ addLog(['ok','Pre-flight checks passed — arming motors']); },3800);
+scheduleNextState();
+updateStateMachine();
+
+// Periodic telemetry logs
+setInterval(()=>{
+  const msgs=[
+    ['info',`Altitude: ${altCurrent.toFixed(2)}m — Stable`],
+    ['info',`LiDAR: ${lidarCur.toFixed(2)}m — within range`],
+    ['warn',`Wind drift detected — yaw correction: ${(Math.random()*5).toFixed(1)}°`],
+    ['ok',`CNN inference: ${fpsDisplay.toFixed(1)} fps — nominal`],
+    ['info',`Battery: ${Math.round(battery)}% — ${battery>30?'OK':'LOW'}`],
+  ];
+  addLog(msgs[Math.floor(Math.random()*msgs.length)]);
+}, 4000);
+
+/* ═══════════════ COMMUNITY REPORTS ═══════════════ */
+const initialReports = [
+  { type:'Active Fire', loc:'Bannerghatta, Bengaluru South', lat:'12.800', lon:'77.570',
+    sev:'High', desc:'Large fire spreading northeast. Orange glow visible from highway. Dense smoke column.', time:'2 min ago', tags:['#forest','#wildlife','#urgent'] },
+  { type:'Suspicious Smoke', loc:'Kodagu District, Karnataka', lat:'12.300', lon:'75.750',
+    sev:'Medium', desc:'Thick grey smoke from hillside. No visible flame yet. Could be controlled burn.', time:'14 min ago', tags:['#smoke','#hills'] },
+  { type:'Ember Shower', loc:'Ooty Forest Division, Tamil Nadu', lat:'11.410', lon:'76.695',
+    sev:'Low', desc:'Embers landing 500m from nearest village. Wind direction south-southwest.', time:'31 min ago', tags:['#embers','#residential'] },
+  { type:'Active Fire', loc:'BRT Tiger Reserve', lat:'11.90', lon:'77.01',
+    sev:'Medium', desc:'Fire moving along ridge. Dry underbrush, high spread potential after dusk.', time:'1 hr ago', tags:['#protected','#wildlife'] },
+];
+
+function renderReports(list){
+  const feed=document.getElementById('reports-feed');
+  feed.innerHTML='';
+  list.forEach(r=>{
+    const sc=r.sev==='High'?'badge-red':r.sev==='Medium'?'badge-orange':'badge-amber';
+    const card=document.createElement('div');
+    card.className='report-card';
+    card.innerHTML=`
+      <div class="rc-head">
+        <span class="rc-name">${r.type}</span>
+        <span class="panel-badge ${sc}">${r.sev}</span>
+      </div>
+      <div class="rc-loc">📍 ${r.loc} · ${r.lat}°N, ${r.lon}°E</div>
+      <div class="rc-desc">${r.desc}</div>
+      <div class="rc-tags">${r.tags.map(t=>`<span class="rc-tag">${t}</span>`).join('')}<span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--txt3);">${r.time}</span></div>`;
+    feed.appendChild(card);
+  });
+  document.getElementById('report-count-badge').textContent=list.length+' reports';
+}
+renderReports(initialReports);
+
+function submitReport(){
+  const type=document.getElementById('report-type').value;
+  const lat=document.getElementById('r-lat').value||'12.971';
+  const lon=document.getElementById('r-lon').value||'77.594';
+  const loc=document.getElementById('r-loc').value||'Location not specified';
+  const sev=document.getElementById('r-sev').value.split(' — ')[0];
+  const desc=document.getElementById('r-desc').value||'No description provided.';
+  if(!type){ alert('Please select a report type'); return; }
+  const newReport={type,loc,lat,lon,sev,desc,time:'just now',tags:['#community','#reported']};
+  initialReports.unshift(newReport);
+  renderReports(initialReports);
+  document.getElementById('success-toast').style.display='block';
+  setTimeout(()=>document.getElementById('success-toast').style.display='none',4000);
+  addLog(['ok',`Community report received: ${type} at ${loc}`]);
+}
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+window.addEventListener('resize',()=>{
+  resizeFireCanvas();
+});
+</script>
+</body>
+</html>
