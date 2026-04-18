@@ -816,15 +816,6 @@ MIT License (2024) — See `LICENSE` file for details.
 
 ---
 
-## 📞 Contact & Support
-
-- **GitHub Issues**: [https://github.com/yourteam/firewatch/issues](https://github.com/yourteam/firewatch/issues)
-- **Email**: firewatch@spaceapps2023.india
-- **Twitter**: [@FireWatchDrones](https://twitter.com)
-- **Documentation**: [https://firewatch.readthedocs.io/](https://firewatch.readthedocs.io/)
-
----
-
 **Last Updated**: January 2024  
 **Version**: 1.0.0-beta  
 **Status**: Active Development
